@@ -409,66 +409,46 @@ class App
 			# Scan Plugins
 			scandir({
 				# Path
-				path: skeletonsPath
+				path: "#{skeletonsPath}/#{repoShortname}"
 
 				# Skip files
 				fileAction: false
 
 				# Handle directories
-				dirAction: (skeletonPath,skeletonRelativePath,nextFile) ->
+				dirAction: (skeletonsPath,skeletonRelativePath,nextFile) ->
 					# Prepare
 					skeletonName = pathUtil.basename(skeletonRelativePath)
 
-					# Skip
-					### TODO: Parse end of exchange.skeleton.name for "(out of date)" to then skip it.
-					if skip and (skeletonName in skip)
-					  me.log('info', "Skipping #{skeletonName}")
-					  return
-					if only and (skeletonName in only) is false
-					  me.log('info', "Skipping #{skeletonName}")
-					  return
-					if startFrom and startFrom > skeletonName
-						me.log('info', "Skipping #{skeletonName}")
-						return
-					if only and (skeletonName in only) is false
-						me.log('info', "Skipping #{skeletonName}")
-						return
-					###
-
 					# Test the skeleton
 					joe.test skeletonName, (done) ->
-						options = {output:true,cwd:skeletonPath}
-						safeps.spawn 'npm install', options, (err) ->
-							# Error
-							return nextFile(err)  if err
 
-							# Prepare
-							options = {output:true,cwd:skeletonPath}
+						# Prepare
+						options = {output:true,cwd:skeletonsPath}
 
-							# Commands
-							spawnCommands = []
-							spawnCommands.push('npm install')
-							spawnCommands.push('./node_modules/.bin/docpad generate')
+						# Commands
+						spawnCommands = []
+						spawnCommands.push('npm install')
+						spawnCommands.push('./node_modules/.bin/docpad generate')
 
-							# Spawn
-							safeps.spawnMultiple spawnCommands, options, (err,results) ->
-								# Output the generate results for the skeleton
-								if results.length is spawnCommands.length
-									generateResult = results[spawnCommands.length-1]
-									err = generateResult[0]
-									# args = generateResult[1...]
-									if err
-										joeError = new Error("Testing #{skeletonName} FAILED")
-										# me.log 'info', "Testing #{skeletonName} FAILED"
-										# args.forEach (arg) -> me.log('info', arg)  if arg
-										done(joeError)
-									else
-										done()
+						# Spawn
+						safeps.spawnMultiple spawnCommands, options, (err,results) ->
+							# Output the generate results for the skeleton
+							if results.length is spawnCommands.length
+								generateResult = results[spawnCommands.length-1]
+								err = generateResult[0]
+								# args = generateResult[1...]
+								if err
+									joeError = new Error("Testing #{skeletonName} FAILED")
+									# me.log 'info', "Testing #{skeletonName} FAILED"
+									# args.forEach (arg) -> me.log('info', arg)  if arg
+									done(joeError)
 								else
 									done()
+							else
+								done()
 
-								# All done
-								nextFile(err, true)
+							# All done
+							nextFile(err, true)
 
 				# Finish
 				next: next
