@@ -68,7 +68,7 @@ class App
 
 				cloneRepos = []
 				for own key,repo of exchange.skeletons
-					repoShortname = repo.repo.replace(/^.+\/(.+\/.+)\.git$/, '$1').replace('/', '-')
+					repoShortname = repo.repo.toLowerCase().replace(/^.+\/(.+\/.+)\.git$/, '$1').replace('/', '-').replace('docpad-skeleton-', '').replace('.docpad', '')
 					cloneRepos.push(
 						name: key
 						url: repo.repo
@@ -128,8 +128,9 @@ class App
 				return next(err)  if err
 
 				# New
-				if fsUtil.existsSync(repo.path) is false
+				if fsUtil.existsSync(repo.path+'/.git') is false
 					spawnCommands.push ['git', 'init']
+					spawnCommands.push ['git', 'remote', 'add', 'origin', repo.url]
 
 				# Update
 				spawnCommands.push ['git', 'fetch', 'origin']
