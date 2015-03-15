@@ -364,8 +364,6 @@ class App
 		@runner.addTask('standardize complete callback', next)  if next
 		@
 
-
-
 	exec: (opts,next) ->
 		me = @
 		{pluginsPath} = @config
@@ -402,7 +400,7 @@ class App
 	generate: (opts,next) ->
 		me = @
 		{skeletonsPath} = @config
-		{skip,only,startFrom} = (opts or {})
+		# {skip,only,startFrom} = (opts or {})
 
 		@runner.addTask 'generate', (next) ->
 			# Require Joe Testing Framework
@@ -429,18 +427,18 @@ class App
 					if only and (skeletonName in only) is false
 					  me.log('info', "Skipping #{skeletonName}")
 					  return
-					###
 					if startFrom and startFrom > skeletonName
 						me.log('info', "Skipping #{skeletonName}")
 						return
 					if only and (skeletonName in only) is false
 						me.log('info', "Skipping #{skeletonName}")
 						return
+					###
 
 					# Test the skeleton
 					joe.test skeletonName, (done) ->
 						options = {output:true,cwd:skeletonPath}
-						safeps.spawn 'npm link docpad', options, (err) ->
+						safeps.spawn 'npm install', options, (err) ->
 							# Error
 							return nextFile(err)  if err
 
