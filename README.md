@@ -17,7 +17,7 @@ A test runner for all of DocPad's officially supported extensions
 
 ### How do I add a skeleton?
 
-Send a pull request for [this file](https://github.com/docpad/extras/blob/docpad-6.x/exchange.json)
+Send a pull request for [this file](https://github.com/docpad/extras/blob/docpad-6.x/exchange.json).
 
 ### A skeleton is out of date or broken, what should I do?
 
@@ -32,7 +32,7 @@ Add `(out of date)` to the name of the out of date skeleton in [this file](https
 	cd ~
 	git clone https://github.com/bevry/docpad.git
 	cd docpad
-	npm install
+npm install
 	cake compile
 	npm link
 	```
@@ -78,4 +78,3 @@ Copyright &copy; 2012+ Bevry Pty Ltd <us@bevry.me> (http://bevry.me)
 <br/>Copyright &copy; 2011 Benjamin Lupton <b@lupton.cc> (http://balupton.com)
 
 <!-- /LICENSE -->
-
