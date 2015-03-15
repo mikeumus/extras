@@ -364,6 +364,8 @@ class App
 		@runner.addTask('standardize complete callback', next)  if next
 		@
 
+
+
 	exec: (opts,next) ->
 		me = @
 		{pluginsPath} = @config
@@ -396,6 +398,87 @@ class App
 
 		@runner.addTask('exec complete callback', next)  if next
 		@
+
+	generate: (opts,next) ->
+		me = @
+		{skeletonsPath} = @config
+		{skip,only,startFrom} = (opts or {})
+
+		@runner.addTask 'generate', (next) ->
+			# Require Joe Testing Framework
+			joe = require('joe')
+
+			# Scan Plugins
+			scandir({
+				# Path
+				path: skeletonsPath
+
+				# Skip files
+				fileAction: false
+
+				# Handle directories
+				dirAction: (skeletonPath,skeletonRelativePath,nextFile) ->
+					# Prepare
+					skeletonName = pathUtil.basename(skeletonRelativePath)
+
+					# Skip
+					### TODO: Parse end of exchange.skeleton.name for "(out of date)" to then skip it.
+					if skip and (skeletonName in skip)
+					  me.log('info', "Skipping #{skeletonName}")
+					  return
+					if only and (skeletonName in only) is false
+					  me.log('info', "Skipping #{skeletonName}")
+					  return
+					###
+					if startFrom and startFrom > skeletonName
+						me.log('info', "Skipping #{skeletonName}")
+						return
+					if only and (skeletonName in only) is false
+						me.log('info', "Skipping #{skeletonName}")
+						return
+
+					# Test the skeleton
+					joe.test skeletonName, (done) ->
+						options = {output:true,cwd:skeletonPath}
+						safeps.spawn 'npm link docpad', options, (err) ->
+							# Error
+							return nextFile(err)  if err
+
+							# Prepare
+							options = {output:true,cwd:skeletonPath}
+
+							# Commands
+							spawnCommands = []
+							spawnCommands.push('npm install')
+							spawnCommands.push('./node_modules/.bin/docpad generate')
+
+							# Spawn
+							safeps.spawnMultiple spawnCommands, options, (err,results) ->
+								# Output the generate results for the skeleton
+								if results.length is spawnCommands.length
+									generateResult = results[spawnCommands.length-1]
+									err = generateResult[0]
+									# args = generateResult[1...]
+									if err
+										joeError = new Error("Testing #{skeletonName} FAILED")
+										# me.log 'info', "Testing #{skeletonName} FAILED"
+										# args.forEach (arg) -> me.log('info', arg)  if arg
+										done(joeError)
+									else
+										done()
+								else
+									done()
+
+								# All done
+								nextFile(err, true)
+
+				# Finish
+				next: next
+			})
+
+		@runner.addTask('generate complete callback', next)  if next
+		@
+
 
 	test: (opts,next) ->
 		me = @
@@ -531,8 +614,12 @@ cli.command('outdated').description('check which plugins have outdated dependenc
 cli.command('standardize').description('ensure plugins live up to the latest standards').action ->  process.nextTick ->
 	app.standardize()
 
+# generate
+cli.command('generate').description('generate skeletons, see whats breaky').action -> process.nextTick ->
+	app.generate()
+
 # clone
-cli.command('clone').description('clone out new plugins and update the old').action ->  process.nextTick ->
+cli.command('clone').description('clone out new plugins & skeletons. Update the old plugins').action ->  process.nextTick ->
 	app.clone()
 
 # status
