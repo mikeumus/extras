@@ -409,7 +409,7 @@ class App
 			# Scan Plugins
 			scandir({
 				# Path
-				path: "#{skeletonsPath}/#{repoShortname}"
+				path: skeletonsPath
 
 				# Skip files
 				fileAction: false
